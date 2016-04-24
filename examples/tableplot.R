@@ -5,6 +5,10 @@ data(diamonds)
 # default tableplot
 tableplot(diamonds)
 
+# prior to verison 1.2, the mean values of numeric variables are displayed 
+# without standard deviation (see ?plot.tabplot):
+tableplot(diamonds, numMode = "MB-ML")
+
 # most expensive diamonds
 tableplot(diamonds, 
 		  select=c(carat, cut, color, clarity, price), 
@@ -21,9 +25,7 @@ tableplot(p, subset=price < 5000 & cut=='Ideal')
 # change palettes
 tableplot(p, 
 		  pals=list(cut="Set4", color="Paired", clarity=grey(seq(0, 1,length.out=7))),
-		  numPals=c(carat="Greens", price="Purples"))
-
-
+		  numPals=c(carat="PRGn", price="BrBG"))
 
 # create a tableplot cut category, and fix scale limits of carat, table, and price
 tabs <- tableplot(p, subset=cut,

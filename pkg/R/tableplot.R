@@ -24,9 +24,10 @@
 #' If the list items are unnamed, they are applied to all selected categorical variables (recycled if necessary). The list items can be assigned to specific categorical variables,
 #' by naming them accordingly.
 #' @param change_palette_type_at number at which the type of categorical palettes is changed. For categorical variables with less than \code{change_palette_type_at} levels, the palette is recycled if necessary. For categorical variables with \code{change_palette_type_at} levels or more, a new palette of interpolated colors is derived (like a rainbow palette).
+#' @param rev_legend logical value or vector that determines which legends are reversed. If a vector is provided, the names of the items should the names of (a selection of) the categorical variables.
 #' @param colorNA color for missing values for categorical variables.
 #' @param colorNA_num color for missing values for numeric variables. It is used when all values in a bin are missing. If a part of the values are missing, a brighter color is used (see argument \code{numPals}).
-#' @param numPals vector of palette names that are used for numeric variables. These names are chosen from the diverging palette names in \code{\link{tablePalettes}}. Either \code{numPals} is a named vector, where the names correspond to the numerical variable names, or an unnamed vector (recycled if necessary). A "-" prefix in the name reverses the palette. The righthand-side of the palette is used for positive mean values, and the lefthand-side for negative mean values. The brightness of the color is determined by the fraction of missing values.
+#' @param numPals vector of palette names that are used for numeric variables. These names are chosen from the diverging palette names in \code{\link{tablePalettes}}. Either \code{numPals} is a named vector, where the names correspond to the numerical variable names, or an unnamed vector (recycled if necessary). A "-" prefix in the name reverses the palette. When sd bars are shown (see the argument \code{numMode} of \code{\link[=plot.tabplot]{plot}}), only the righthand-side of the palette is used, where brightness is used to differentiate between mean bar and sd bar. When sd bars are not shown (the default in versions before 1.2), the righthand-side of the palette is used for positive mean values, and the lefthand-side for negative mean values. The brightness of the color is determined by the fraction of missing values.
 #' @param limitsX a list of vectors of length two, where each vector contains a lower and an upper limit value. Either the names of \code{limitsX} correspond to numerical variable names, or \code{limitsX} is an unnamed list (recycled if necessary).
 #' @param bias_brokenX parameter between 0 en 1 that determines when the x-axis of a numeric variable is broken. If minimum value is at least \code{bias_brokenX} times the maximum value, then X axis is broken. To turn off broken x-axes, set \code{bias_brokenX=1}.
 #' @param IQR_bias parameter that determines when a logarithmic scale is used when \code{scales} is set to "auto". The argument \code{IQR_bias} is multiplied by the interquartile range as a test.
@@ -39,6 +40,12 @@
 #' @return \code{\link{tabplot-object}} (silent output). If multiple tableplots are generated (which can be done by either setting \code{subset} to a categorical column name, or by restricting the number of columns with \code{nCols}), then a list of \code{\link{tabplot-object}s} is silently returned.
 #' @export
 #' @import grid
+#' @importFrom grDevices col2rgb colorRampPalette dev.off
+#' @importFrom graphics par plot
+#' @importFrom stats na.omit quantile runif
+#' @importFrom utils capture.output head str tail
+#' @importFrom ff clone "nrow<-" fforder ffdf as.ffdf
+#' @importFrom bit physical ri
 #' @keywords visualization
 #' @example ../examples/tableplot.R
 #' @seealso \code{\link{itableplot}}
@@ -220,7 +227,7 @@ tableplot <- function(dat, select, subset=NULL, sortCol=1,  decreasing=TRUE,
     			  , nbins=nBins, decreasing=decreasing, sample, sampleBinSize=sampleBinSize)
 		
 	bd <- bin_hcc_data(bd, max_levels)
-	
+	#print(list(bd=bd))
 	tab <- columnTable( bd, datName, colNames=colNames, subset_string=subset_string, 
 						sortCol=sortCol, decreasing=decreasing, scales=scales, 
 						pals=pals, 
